@@ -11,6 +11,7 @@ const Footer = () => {
             <p className="text-gray-300 mb-4">
               Plataforma educativa para el aprendizaje de contabilidad básica y avanzada. 
               Basada en los conceptos de Elías Lara Flores.
+              Esta pagina fue realizada por Cesar Gomez Aguilera :)
             </p>
           </div>
           
@@ -49,7 +50,7 @@ const Footer = () => {
               href="mailto:info@contabilidadfacil.com" 
               className="text-blue-300 hover:text-white transition-colors"
             >
-              info@contabilidadfacil.com
+              BlackRubick14@gmail.com
             </a>
           </div>
         </div>
