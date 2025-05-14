@@ -1,7 +1,10 @@
 // src/components/temas/Dinamicas/EjercicioPractico.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const EjercicioPractico = ({ temaId }) => {
+  // Asegurarnos de que temaId sea un número
+  const temaIdNum = Number(temaId);
+  
   // Ejercicios para el tema "Cuentas Contables" (ID: 1)
   const ejerciciosCuentasContables = [
     {
@@ -82,7 +85,9 @@ const EjercicioPractico = ({ temaId }) => {
 
   // Seleccionar el ejercicio basado en el temaId
   const getEjerciciosPorTema = () => {
-    switch (temaId) {
+    console.log("Tema ID recibido:", temaIdNum);
+    
+    switch (temaIdNum) {
       case 1:
         return ejerciciosCuentasContables;
       case 2:
@@ -90,14 +95,38 @@ const EjercicioPractico = ({ temaId }) => {
       case 3:
         return ejerciciosEstadosFinancieros;
       default:
-        return ejerciciosCuentasContables;
+        console.log("No se encontraron ejercicios para el tema ID:", temaIdNum);
+        return ejerciciosCuentasContables; // Por defecto, mostrar ejercicios de cuentas contables
     }
   };
 
-  const ejercicios = getEjerciciosPorTema();
-  const [ejercicioActual, setEjercicioActual] = useState(ejercicios[0]);
+  const [ejercicios, setEjercicios] = useState([]);
+  const [ejercicioActual, setEjercicioActual] = useState(null);
   const [respuestas, setRespuestas] = useState({});
   const [mostrarResultados, setMostrarResultados] = useState(false);
+  const [cargando, setCargando] = useState(true);
+
+  // Inicializar ejercicios y ejercicio actual
+  useEffect(() => {
+    try {
+      setCargando(true);
+      const nuevosEjercicios = getEjerciciosPorTema();
+      setEjercicios(nuevosEjercicios || []);
+      
+      if (nuevosEjercicios && nuevosEjercicios.length > 0) {
+        setEjercicioActual(nuevosEjercicios[0]);
+      } else {
+        setEjercicioActual(null);
+      }
+      
+      setRespuestas({});
+      setMostrarResultados(false);
+    } catch (error) {
+      console.error("Error al cargar ejercicios:", error);
+    } finally {
+      setCargando(false);
+    }
+  }, [temaIdNum]);
 
   const handleRespuesta = (cuentaNombre, respuesta) => {
     setRespuestas({
@@ -115,6 +144,17 @@ const EjercicioPractico = ({ temaId }) => {
   };
 
   const renderEjercicioClasificacion = () => {
+    // Verificación defensiva
+    if (!ejercicioActual || !ejercicioActual.cuentas || !Array.isArray(ejercicioActual.cuentas)) {
+      return (
+        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+          <p className="text-yellow-800">
+            Los datos del ejercicio no están disponibles en este momento.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div>
         <h3 className="text-xl font-semibold text-blue-700 mb-4">{ejercicioActual.titulo}</h3>
@@ -200,6 +240,17 @@ const EjercicioPractico = ({ temaId }) => {
   };
 
   const renderEjercicioCargoAbono = () => {
+    // Verificación defensiva
+    if (!ejercicioActual || !ejercicioActual.cuentas || !Array.isArray(ejercicioActual.cuentas)) {
+      return (
+        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+          <p className="text-yellow-800">
+            Los datos del ejercicio no están disponibles en este momento.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div>
         <h3 className="text-xl font-semibold text-blue-700 mb-4">{ejercicioActual.titulo}</h3>
@@ -254,26 +305,210 @@ const EjercicioPractico = ({ temaId }) => {
     );
   };
 
+  const renderEjercicioLibroDiario = () => {
+    // Verificación defensiva
+    if (!ejercicioActual || !ejercicioActual.transacciones || !Array.isArray(ejercicioActual.transacciones)) {
+      return (
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <h3 className="text-xl font-semibold text-blue-700 mb-4">Ejercicio de Libro Diario</h3>
+          <p className="text-blue-700 mb-4">
+            Este ejercicio te permitirá practicar el registro de operaciones en el libro diario.
+          </p>
+          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+            <p className="text-yellow-800">
+              <strong>Próximamente:</strong> Estamos trabajando en implementar este ejercicio de forma interactiva.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <h3 className="text-xl font-semibold text-blue-700 mb-4">{ejercicioActual.titulo}</h3>
+        <p className="mb-6 text-gray-700">{ejercicioActual.descripcion}</p>
+        
+        <div className="space-y-6 mb-6">
+          {ejercicioActual.transacciones.map((transaccion, index) => (
+            <div key={index} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+              <p className="font-medium text-gray-800 mb-4">{transaccion.descripcion}</p>
+              
+              <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 mb-4">
+                <h4 className="font-semibold text-yellow-800 mb-2">Solución:</h4>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="py-2 px-4 border-b text-left">Cuenta</th>
+                        <th className="py-2 px-4 border-b text-right">Debe</th>
+                        <th className="py-2 px-4 border-b text-right">Haber</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transaccion.solucion && transaccion.solucion.map((cuenta, i) => (
+                        <tr key={i}>
+                          <td className="py-2 px-4 border-b">
+                            {cuenta.haber > 0 && <span className="ml-8">  </span>}
+                            {cuenta.nombre}
+                          </td>
+                          <td className="py-2 px-4 border-b text-right">
+                            {cuenta.debe > 0 ? `$${cuenta.debe.toLocaleString()}` : ''}
+                          </td>
+                          <td className="py-2 px-4 border-b text-right">
+                            {cuenta.haber > 0 ? `$${cuenta.haber.toLocaleString()}` : ''}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <p className="text-blue-800">
+            <strong>Nota:</strong> Este ejercicio es demostrativo. Pronto implementaremos una versión interactiva para que puedas practicar el registro de asientos.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const renderEjercicioBalanceGeneral = () => {
+    // Verificación defensiva
+    if (!ejercicioActual || !ejercicioActual.cuentas || !Array.isArray(ejercicioActual.cuentas)) {
+      return (
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <h3 className="text-xl font-semibold text-blue-700 mb-4">Ejercicio de Balance General</h3>
+          <p className="text-blue-700 mb-4">
+            Este ejercicio te permitirá practicar la elaboración de un balance general.
+          </p>
+          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+            <p className="text-yellow-800">
+              <strong>Próximamente:</strong> Estamos trabajando en implementar este ejercicio de forma interactiva.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <h3 className="text-xl font-semibold text-blue-700 mb-4">{ejercicioActual.titulo}</h3>
+        <p className="mb-6 text-gray-700">{ejercicioActual.descripcion}</p>
+        
+        <div className="bg-white border border-gray-300 rounded-lg p-6 mb-6">
+          <h4 className="font-bold text-center mb-4">Cuentas disponibles:</h4>
+          
+          <div className="grid md:grid-cols-3 gap-4">
+            {ejercicioActual.cuentas.map((cuenta, index) => (
+              <div key={index} className={`p-3 rounded-lg border ${
+                cuenta.tipo === 'activo' ? 'bg-blue-50 border-blue-200' :
+                cuenta.tipo === 'pasivo' ? 'bg-red-50 border-red-200' :
+                'bg-green-50 border-green-200'
+              }`}>
+                <p className="font-medium">{cuenta.nombre}</p>
+                <p className="text-gray-700">${cuenta.saldo.toLocaleString()}</p>
+                <p className="text-xs capitalize">{cuenta.tipo}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <p className="text-blue-800">
+            <strong>Nota:</strong> Este ejercicio es demostrativo. Pronto implementaremos una versión interactiva para que puedas practicar la elaboración de estados financieros.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const renderEjercicio = () => {
-    // ID 1 corresponde a ejercicios de Cuentas Contables
-    if (temaId === 1) {
-      if (ejercicioActual.id === 1) {
-        return renderEjercicioClasificacion();
-      } else if (ejercicioActual.id === 2) {
-        return renderEjercicioCargoAbono();
-      }
+    // Si estamos cargando, mostrar indicador
+    if (cargando) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Cargando ejercicio...</p>
+        </div>
+      );
     }
     
-    // Por defecto, retornar algún ejercicio genérico o mensaje
-    return <p>Ejercicio no disponible.</p>;
+    // Si no hay ejercicio actual, mostrar mensaje
+    if (!ejercicioActual) {
+      return (
+        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+          <p className="text-yellow-800">
+            No se encontró un ejercicio para este tema (ID: {temaIdNum}).
+            Por favor, selecciona otro tema o ejercicio.
+          </p>
+        </div>
+      );
+    }
+    
+    console.log("Renderizando ejercicio para tema:", temaIdNum);
+    console.log("Ejercicio actual ID:", ejercicioActual?.id);
+    
+    try {
+      // Tema 1: Cuentas Contables
+      if (temaIdNum === 1) {
+        if (ejercicioActual.id === 1) {
+          return renderEjercicioClasificacion();
+        } else if (ejercicioActual.id === 2) {
+          return renderEjercicioCargoAbono();
+        }
+      }
+      
+      // Tema 2: Libro Diario
+      if (temaIdNum === 2) {
+        return renderEjercicioLibroDiario();
+      }
+      
+      // Tema 3: Estados Financieros
+      if (temaIdNum === 3) {
+        return renderEjercicioBalanceGeneral();
+      }
+      
+      // Si llegamos aquí, mostrar mensaje genérico
+      return (
+        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+          <p className="text-yellow-800">
+            No se encontró un ejercicio específico para este tema (ID: {temaIdNum}) y ejercicio (ID: {ejercicioActual?.id}).
+          </p>
+        </div>
+      );
+    } catch (error) {
+      console.error("Error al renderizar ejercicio:", error);
+      return (
+        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+          <p className="text-red-800">
+            Ocurrió un error al cargar el ejercicio. Por favor, intenta nuevamente.
+          </p>
+        </div>
+      );
+    }
   };
+
+  // Si no hay ejercicios disponibles para este tema
+  if (ejercicios.length === 0 && !cargando) {
+    return (
+      <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-200">
+        <h2 className="text-xl font-semibold text-yellow-800 mb-3">Sin ejercicios disponibles</h2>
+        <p className="text-yellow-700">
+          Actualmente no hay ejercicios disponibles para este tema. Estamos trabajando para añadir más contenido pronto.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
       <h2 className="text-2xl font-bold text-blue-800 mb-6">Ejercicio Práctico</h2>
       
       {/* Selector de ejercicios si hay más de uno */}
-      {ejercicios.length > 1 && (
+      {ejercicios.length > 1 && !cargando && (
         <div className="mb-6">
           <label className="block text-gray-700 font-medium mb-2">Selecciona un ejercicio:</label>
           <div className="flex flex-wrap gap-2">
@@ -286,7 +521,7 @@ const EjercicioPractico = ({ temaId }) => {
                   setMostrarResultados(false);
                 }}
                 className={`px-4 py-2 rounded-lg ${
-                  ejercicioActual.id === ejercicio.id
+                  ejercicioActual?.id === ejercicio.id
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-blue-600 border border-blue-300 hover:bg-blue-50'
                 }`}
